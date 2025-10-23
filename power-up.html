@@ -203,56 +203,62 @@
         // Initialize Trello Power-Up
         TrelloPowerUp.initialize({
             'card-badges': [
-                function(t, options) {
-                    const card = options.card;
-
-                    return (async function() {
-                        try {
-                            // Get or initialize card tracking data
-                            const trackingData = await getOrInitializeCardData(t, card);
-
-                            if (!trackingData) {
-                                return [];
-                            }
-
-                            // Calculate days in current column
-                            const daysInColumn = calculateDaysInColumn(trackingData.currentColumnEnteredAt);
-
-                            // Calculate card age from Trello's dateLastActivity
-                            const cardAge = calculateCardAge(card.dateLastActivity);
-
-                            // Format display text
-                            const daysInColumnText = formatDays(daysInColumn);
-                            const cardAgeText = formatDays(cardAge);
-
-                            return [{
-                                text: `⏱️ ${cardAgeText} | ${daysInColumnText}`,
-                                color: daysInColumn > 7 ? 'red' : 'green',
-                                refresh: 60 // Refresh every 60 seconds
-                            }];
-                        } catch (e) {
-                            console.error('Error generating badge:', e);
-                            return [];
-                        }
-                    })();
-                }
+                cardBadgeCallback
             ],
             'card-buttons': [
-                function(t, options) {
-                    return [{
-                        text: 'Time Analytics',
-                        icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838912.png',
-                        callback: function(t) {
-                            return t.modal({
-                                title: 'Time Analytics',
-                                url: './time-modal.html',
-                                height: 600
-                            });
-                        }
-                    }];
-                }
+                cardButtonCallback
             ]
         });
+
+        // Card badge callback function
+        function cardBadgeCallback(t, options) {
+            const card = options.card;
+
+            return (async function() {
+                try {
+                    // Get or initialize card tracking data
+                    const trackingData = await getOrInitializeCardData(t, card);
+
+                    if (!trackingData) {
+                        return [];
+                    }
+
+                    // Calculate days in current column
+                    const daysInColumn = calculateDaysInColumn(trackingData.currentColumnEnteredAt);
+
+                    // Calculate card age from Trello's dateLastActivity
+                    const cardAge = calculateCardAge(card.dateLastActivity);
+
+                    // Format display text
+                    const daysInColumnText = formatDays(daysInColumn);
+                    const cardAgeText = formatDays(cardAge);
+
+                    return [{
+                        text: `⏱️ ${cardAgeText} | ${daysInColumnText}`,
+                        color: daysInColumn > 7 ? 'red' : 'green',
+                        refresh: 60 // Refresh every 60 seconds
+                    }];
+                } catch (e) {
+                    console.error('Error generating badge:', e);
+                    return [];
+                }
+            })();
+        }
+
+        // Card button callback function
+        function cardButtonCallback(t, options) {
+            return [{
+                text: 'Time Analytics',
+                icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838912.png',
+                callback: function(t) {
+                    return t.modal({
+                        title: 'Time Analytics',
+                        url: './time-modal.html',
+                        height: 600
+                    });
+                }
+            }];
+        }
 
         // Get or initialize card tracking data
         async function getOrInitializeCardData(t, card) {
