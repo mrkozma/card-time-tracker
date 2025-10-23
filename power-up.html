@@ -214,11 +214,9 @@
         function cardBadgeCallback(t, options) {
             const card = options.card;
 
-            return (async function() {
-                try {
-                    // Get or initialize card tracking data
-                    const trackingData = await getOrInitializeCardData(t, card);
-
+            // Return a promise directly without wrapping in async IIFE
+            return getOrInitializeCardData(t, card)
+                .then(trackingData => {
                     if (!trackingData) {
                         return [];
                     }
@@ -238,11 +236,11 @@
                         color: daysInColumn > 7 ? 'red' : 'green',
                         refresh: 60 // Refresh every 60 seconds
                     }];
-                } catch (e) {
+                })
+                .catch(e => {
                     console.error('Error generating badge:', e);
                     return [];
-                }
-            })();
+                });
         }
 
         // Card button callback function
