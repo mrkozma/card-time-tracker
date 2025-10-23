@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Analytics</title>
+    <script src="https://trello.com/app-ad.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: #fff;
+            color: #333;
+            padding: 20px;
+        }
+
+        body.dark-mode {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .summary-box {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        body.dark-mode .summary-box {
+            background-color: #2d2d2d;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .summary-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        body.dark-mode .summary-label {
+            color: #aaa;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        body.dark-mode .summary-value {
+            color: #e0e0e0;
+        }
+
+        .time-entry {
+            margin-bottom: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #2196F3;
+        }
+
+        body.dark-mode .time-entry {
+            background-color: #2d2d2d;
+            border-left-color: #1976D2;
+        }
+
+        .time-entry.current {
+            border-left-color: #4CAF50;
+            background-color: #f1f8f4;
+        }
+
+        body.dark-mode .time-entry.current {
+            background-color: #1d3d2e;
+            border-left-color: #2e7d34;
+        }
+
+        .list-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        body.dark-mode .status-badge {
+            background-color: #444;
+            color: #e0e0e0;
+        }
+
+        .status-badge.current {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .time-details {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        body.dark-mode .time-details {
+            color: #aaa;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        body.dark-mode .progress-bar {
+            background-color: #444;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #2196F3;
+            border-radius: 3px;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        body.dark-mode .progress-label {
+            color: #aaa;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        body.dark-mode .no-data {
+            color: #666;
+        }
+
+        .refresh-note {
+            font-size: 12px;
+            color: #999;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        body.dark-mode .refresh-note {
+            color: #666;
+            border-top-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <h1>⏱️ Time Analytics</h1>
+    
+    <div id="content">
+        <div class="no-data">Loading...</div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const t = TrelloPowerUp.iframe();
+
+        // Check for dark mode
+        function checkDarkMode() {
+            const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+
+        function formatDays(days) {
+            if (days < 0) return '0d';
+
+            const totalHours = days * 24;
+            const totalMinutes = totalHours * 60;
+
+            if (days >= 1) {
+                const wholeD = Math.floor(days);
+                const remainingHours = Math.floor((days - wholeD) * 24);
+                return remainingHours > 0 ? `${wholeD}d ${remainingHours}h` : `${wholeD}d`;
+            }
+
+            if (totalHours >= 1) {
+                const wholeH = Math.floor(totalHours);
+                const remainingMinutes = Math.floor((totalHours - wholeH) * 60);
+                return remainingMinutes > 0 ? `${wholeH}h ${remainingMinutes}m` : `${wholeH}h`;
+            }
+
+            return `${Math.floor(totalMinutes)}m`;
+        }
+
+        function calculateDaysInColumn(enteredAtISO) {
+            const enteredAt = new Date(enteredAtISO);
+            const now = new Date();
+            const milliseconds = now - enteredAt;
+            return milliseconds / (1000 * 60 * 60 * 24);
+        }
+
+        function calculateCardAge(dateLastActivity) {
+            if (!dateLastActivity) {
+                return 0;
+            }
+            const createdAt = new Date(dateLastActivity);
+            const now = new Date();
+            const milliseconds = now - createdAt;
+            return milliseconds / (1000 * 60 * 60 * 24);
+        }
+
+        async function loadTimeAnalytics() {
+            try {
+                const card = await t.card('all');
+
+                // Get tracking data from Trello
+                const trackingData = await t.card('shared', 'columnTracking');
+
+                if (!trackingData || !trackingData.currentColumnEnteredAt) {
+                    document.getElementById('content').innerHTML = `
+                        <div class="no-data">
+                            <p>No time tracking data yet.</p>
+                            <p style="font-size: 12px; margin-top: 8px;">Card tracking will initialize when the power-up loads.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Calculate metrics
+                const cardAge = calculateCardAge(card.dateLastActivity);
+                const daysInColumn = calculateDaysInColumn(trackingData.currentColumnEnteredAt);
+
+                const cardAgeText = formatDays(cardAge);
+                const daysInColumnText = formatDays(daysInColumn);
+
+                // Build HTML
+                let html = `
+                    <div class="summary-box">
+                        <div class="summary-item">
+                            <span class="summary-label">Card Age (Project)</span>
+                            <span class="summary-value">${cardAgeText}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Time in Current Column</span>
+                            <span class="summary-value">${daysInColumnText}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Current Column</span>
+                            <span class="summary-value">${card.idList || 'Unknown'}</span>
+                        </div>
+                    </div>
+                `;
+
+                // Add current column details
+                const enteredDate = new Date(trackingData.currentColumnEnteredAt);
+                const enteredStr = enteredDate.toLocaleString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                html += `
+                    <div class="time-entry current">
+                        <div class="list-name">
+                            Currently in Column
+                            <span class="status-badge current">Active</span>
+                        </div>
+                        <div class="time-details">
+                            <strong>${daysInColumnText}</strong> • Entered: ${enteredStr}
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                `;
+
+                html += `
+                    <div class="refresh-note">
+                        Data refreshes automatically • Last updated: ${new Date().toLocaleTimeString()}
+                    </div>
+                `;
+
+                document.getElementById('content').innerHTML = html;
+
+            } catch (e) {
+                console.error('Error loading time analytics:', e);
+                document.getElementById('content').innerHTML = `
+                    <div class="no-data">
+                        <p>Error loading data. Please refresh.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load on startup and refresh every 10 seconds
+        checkDarkMode();
+        loadTimeAnalytics();
+        setInterval(loadTimeAnalytics, 10000);
+
+        // Listen for storage changes to update in real-time
+        window.addEventListener('storage', loadTimeAnalytics);
+    </script>
+</body>
+</html>

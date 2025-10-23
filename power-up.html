@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Time Tracker Power-Up</title>
+    <script src="https://trello.com/app-ad.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: #fff;
+            color: #333;
+        }
+
+        body.dark-mode {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background-color: #f0f0f0;
+            color: #333;
+            margin-top: 4px;
+        }
+
+        body.dark-mode .time-badge {
+            background-color: #333;
+            color: #e0e0e0;
+        }
+
+        .time-badge.active-list {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .time-badge.danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        body.dark-mode .modal {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        body.dark-mode .modal-header {
+            border-bottom-color: #444;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .time-entry {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        body.dark-mode .time-entry {
+            border-bottom-color: #444;
+        }
+
+        .time-entry:last-child {
+            border-bottom: none;
+        }
+
+        .list-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        body.dark-mode .list-name {
+            color: #e0e0e0;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .time-duration {
+            font-size: 14px;
+            color: #666;
+        }
+
+        body.dark-mode .time-duration {
+            color: #aaa;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        body.dark-mode .progress-bar {
+            background-color: #444;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #2196F3;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .status-current {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .status-previous {
+            background-color: #9E9E9E;
+            color: white;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        body.dark-mode .no-data {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Initialize Trello Power-Up
+        TrelloPowerUp.initialize({
+            'card-badges': [
+                async function(t, options) {
+                    const card = options.card;
+
+                    try {
+                        // Get or initialize card tracking data
+                        const trackingData = await getOrInitializeCardData(t, card);
+
+                        if (!trackingData) {
+                            return [];
+                        }
+
+                        // Calculate days in current column
+                        const daysInColumn = calculateDaysInColumn(trackingData.currentColumnEnteredAt);
+
+                        // Calculate card age from Trello's dateLastActivity
+                        const cardAge = calculateCardAge(card.dateLastActivity);
+
+                        // Format display text
+                        const daysInColumnText = formatDays(daysInColumn);
+                        const cardAgeText = formatDays(cardAge);
+
+                        return [{
+                            text: `⏱️ ${cardAgeText} | ${daysInColumnText}`,
+                            color: daysInColumn > 7 ? 'red' : 'green',
+                            refresh: 60 // Refresh every 60 seconds
+                        }];
+                    } catch (e) {
+                        console.error('Error generating badge:', e);
+                        return [];
+                    }
+                }
+            ],
+            'card-buttons': [
+                async function(t, options) {
+                    return [{
+                        text: 'Time Analytics',
+                        icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838912.png',
+                        callback: function(t) {
+                            return t.modal({
+                                title: 'Time Analytics',
+                                url: './time-modal.html',
+                                height: 600
+                            });
+                        }
+                    }];
+                }
+            ]
+        });
+
+        // Get or initialize card tracking data
+        async function getOrInitializeCardData(t, card) {
+            try {
+                // Try to get existing tracking data
+                let trackingData = await t.card('shared', 'columnTracking');
+
+                if (trackingData && trackingData.currentColumnEnteredAt) {
+                    // Data exists, return it
+                    return trackingData;
+                }
+
+                // First time seeing this card - initialize with current timestamp
+                const newTrackingData = {
+                    cardId: card.id,
+                    currentColumnEnteredAt: new Date().toISOString(),
+                    currentColumnId: card.idList,
+                    currentColumnName: card.name // Will be updated when we get list name
+                };
+
+                // Save it to Trello
+                await t.card('shared', 'columnTracking', newTrackingData);
+
+                return newTrackingData;
+            } catch (e) {
+                console.error('Error getting or initializing card data:', e);
+                return null;
+            }
+        }
+
+        // Update card tracking when it moves to a new column
+        async function updateCardColumnEntry(t, card) {
+            try {
+                const trackingData = await t.card('shared', 'columnTracking');
+
+                // Only update if card moved to a different column
+                if (trackingData && trackingData.currentColumnId === card.idList) {
+                    return; // Same column, no update needed
+                }
+
+                // Card moved to a new column
+                const updatedData = {
+                    cardId: card.id,
+                    currentColumnEnteredAt: new Date().toISOString(),
+                    currentColumnId: card.idList,
+                    currentColumnName: card.name
+                };
+
+                await t.card('shared', 'columnTracking', updatedData);
+            } catch (e) {
+                console.error('Error updating card column entry:', e);
+            }
+        }
+
+        // Calculate days in current column
+        function calculateDaysInColumn(enteredAtISO) {
+            const enteredAt = new Date(enteredAtISO);
+            const now = new Date();
+            const milliseconds = now - enteredAt;
+            return milliseconds / (1000 * 60 * 60 * 24); // Convert to days
+        }
+
+        // Calculate card age from Trello's dateLastActivity
+        function calculateCardAge(dateLastActivity) {
+            if (!dateLastActivity) {
+                return 0;
+            }
+            const createdAt = new Date(dateLastActivity);
+            const now = new Date();
+            const milliseconds = now - createdAt;
+            return milliseconds / (1000 * 60 * 60 * 24); // Convert to days
+        }
+
+        // Format days to readable format (e.g., "3d 5h" or "2h 30m")
+        function formatDays(days) {
+            if (days < 0) return '0d';
+
+            const totalHours = days * 24;
+            const totalMinutes = totalHours * 60;
+
+            if (days >= 1) {
+                const wholeD = Math.floor(days);
+                const remainingHours = Math.floor((days - wholeD) * 24);
+                return remainingHours > 0 ? `${wholeD}d ${remainingHours}h` : `${wholeD}d`;
+            }
+
+            if (totalHours >= 1) {
+                const wholeH = Math.floor(totalHours);
+                const remainingMinutes = Math.floor((totalHours - wholeH) * 60);
+                return remainingMinutes > 0 ? `${wholeH}h ${remainingMinutes}m` : `${wholeH}h`;
+            }
+
+            return `${Math.floor(totalMinutes)}m`;
+        }
+
+        // Expose functions globally for modal access
+        window.listTimeTracker = {
+            getOrInitializeCardData,
+            updateCardColumnEntry,
+            calculateDaysInColumn,
+            calculateCardAge,
+            formatDays
+        };
+    </script>
+</body>
+</html>

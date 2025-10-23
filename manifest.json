@@ -1,0 +1,36 @@
+{
+  "name": "List Time Tracker",
+  "description": "Automatically track how long each card has spent in its current list",
+  "icon": {
+    "url": "https://cdn-icons-png.flaticon.com/512/2838/2838912.png"
+  },
+  "author": {
+    "name": "Attila's Team"
+  },
+  "permissions": [
+    "card",
+    "board",
+    "account",
+    "shared"
+  ],
+  "connector": {
+    "url": "https://your-domain.com/power-up.html"
+  },
+  "appKey": "card-time-tracker-app",
+  "powerUpId": "card-time-tracker",
+  "redirectUris": [],
+  "cardDetailBadges": [
+    {
+      "title": "List Time Tracker",
+      "icon": "https://cdn-icons-png.flaticon.com/512/2838/2838912.png",
+      "callback": "cardBadgeCallback"
+    }
+  ],
+  "cardButtons": [
+    {
+      "icon": "https://cdn-icons-png.flaticon.com/512/2838/2838912.png",
+      "text": "Time Analytics",
+      "callback": "cardButtonCallback"
+    }
+  ]
+}
