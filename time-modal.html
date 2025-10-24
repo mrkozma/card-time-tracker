@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Analytics</title>
-    <script src="https://trello.com/app-ad.js"></script>
+    <title>Time Analytics Modal</title>
     <style>
         * {
             margin: 0;
@@ -13,326 +12,315 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-            background-color: #fff;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8f9fa;
             padding: 20px;
+            line-height: 1.6;
         }
 
-        body.dark-mode {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-        }
-
-        h1 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .summary-box {
-            background-color: #f5f5f5;
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
             border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        body.dark-mode .summary-box {
-            background-color: #2d2d2d;
-        }
-
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .summary-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .summary-label {
-            font-weight: 500;
-            color: #666;
-        }
-
-        body.dark-mode .summary-label {
-            color: #aaa;
-        }
-
-        .summary-value {
-            font-weight: 600;
-            color: #333;
-        }
-
-        body.dark-mode .summary-value {
-            color: #e0e0e0;
-        }
-
-        .time-entry {
-            margin-bottom: 16px;
-            padding: 16px;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-            border-left: 4px solid #2196F3;
-        }
-
-        body.dark-mode .time-entry {
-            background-color: #2d2d2d;
-            border-left-color: #1976D2;
-        }
-
-        .time-entry.current {
-            border-left-color: #4CAF50;
-            background-color: #f1f8f4;
-        }
-
-        body.dark-mode .time-entry.current {
-            background-color: #1d3d2e;
-            border-left-color: #2e7d34;
-        }
-
-        .list-name {
-            font-weight: 600;
-            font-size: 15px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 500;
-            background-color: #e0e0e0;
-            color: #333;
-        }
-
-        body.dark-mode .status-badge {
-            background-color: #444;
-            color: #e0e0e0;
-        }
-
-        .status-badge.current {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .time-details {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        body.dark-mode .time-details {
-            color: #aaa;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background-color: #e0e0e0;
-            border-radius: 3px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
-        body.dark-mode .progress-bar {
-            background-color: #444;
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
         }
 
-        .progress-fill {
-            height: 100%;
-            background-color: #2196F3;
-            border-radius: 3px;
+        .header h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            font-weight: 600;
         }
 
-        .progress-label {
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .stat-group {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-group:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .stat-label {
             font-size: 12px;
             color: #666;
-            margin-top: 4px;
-            text-align: right;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
         }
 
-        body.dark-mode .progress-label {
-            color: #aaa;
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
         }
 
-        .no-data {
+        .stat-detail {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .badge.green {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.red {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge.completed {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .info-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px;
+        }
+
+        .loading {
             text-align: center;
             padding: 40px 20px;
-            color: #999;
-        }
-
-        body.dark-mode .no-data {
             color: #666;
         }
 
-        .refresh-note {
-            font-size: 12px;
-            color: #999;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            text-align: center;
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        body.dark-mode .refresh-note {
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .date-display {
+            font-size: 13px;
             color: #666;
-            border-top-color: #444;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-top: 8px;
         }
     </style>
 </head>
 <body>
-    <h1>⏱️ Time Analytics</h1>
-    
-    <div id="content">
-        <div class="no-data">Loading...</div>
+    <div class="container">
+        <div class="header">
+            <h1>⏱️ Card Age</h1>
+            <p id="cardNameDisplay">Loading...</p>
+        </div>
+
+        <div class="content" id="contentArea">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px;">Loading analytics...</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span class="info-icon">i</span>
+            <span>Data from custom fields</span>
+        </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        const t = TrelloPowerUp.iframe();
-
-        // Check for dark mode
-        function checkDarkMode() {
-            const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (isDark) {
-                document.body.classList.add('dark-mode');
-            }
+        /**
+         * Parse URL parameters
+         */
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                cardId: params.get('cardId'),
+                cardName: params.get('cardName'),
+                cardAge: parseInt(params.get('cardAge')) || 0,
+                creationDate: params.get('creationDate'),
+                completionDate: params.get('completionDate'),
+                isCompleted: params.get('isCompleted') === 'true'
+            };
         }
 
-        function formatDays(days) {
-            if (days < 0) return '0d';
-
-            const totalHours = days * 24;
-            const totalMinutes = totalHours * 60;
-
-            if (days >= 1) {
-                const wholeD = Math.floor(days);
-                const remainingHours = Math.floor((days - wholeD) * 24);
-                return remainingHours > 0 ? `${wholeD}d ${remainingHours}h` : `${wholeD}d`;
-            }
-
-            if (totalHours >= 1) {
-                const wholeH = Math.floor(totalHours);
-                const remainingMinutes = Math.floor((totalHours - wholeH) * 60);
-                return remainingMinutes > 0 ? `${wholeH}h ${remainingMinutes}m` : `${wholeH}h`;
-            }
-
-            return `${Math.floor(totalMinutes)}m`;
+        /**
+         * Determine badge color based on card age
+         */
+        function getBadgeClass(cardAge) {
+            return cardAge >= 7 ? 'red' : 'green';
         }
 
-        function calculateDaysInColumn(enteredAtISO) {
-            const enteredAt = new Date(enteredAtISO);
-            const now = new Date();
-            const milliseconds = now - enteredAt;
-            return milliseconds / (1000 * 60 * 60 * 24);
-        }
-
-        function calculateCardAge(dateLastActivity) {
-            if (!dateLastActivity) {
-                return 0;
+        /**
+         * Get badge text based on age threshold
+         */
+        function getBadgeText(cardAge) {
+            if (cardAge >= 7) {
+                return '🔴 Card is 7+ days old';
             }
-            const createdAt = new Date(dateLastActivity);
-            const now = new Date();
-            const milliseconds = now - createdAt;
-            return milliseconds / (1000 * 60 * 60 * 24);
+            return '🟢 Card is less than 7 days old';
         }
 
-        async function loadTimeAnalytics() {
+        /**
+         * Format date for display (YYYY-MM-DD to readable format)
+         */
+        function formatDate(dateStr) {
+            if (!dateStr || dateStr === 'Not set') return 'Not set';
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            const date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
+            return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        /**
+         * Format content with analytics data
+         */
+        function renderAnalytics(data) {
+            const badgeClass = getBadgeClass(data.cardAge);
+            const badgeText = getBadgeText(data.cardAge);
+
+            const html = `
+                <div class="stat-group">
+                    <div class="stat-label">Card Age (Days)</div>
+                    <div class="stat-value">${data.cardAge}d</div>
+                    <div class="stat-detail">How long the card has existed</div>
+                    ${data.creationDate ? `<div class="date-display">Created: ${formatDate(data.creationDate)}</div>` : ''}
+                    <div class="badge ${badgeClass}">${badgeText}</div>
+                </div>
+
+                ${data.isCompleted ? `
+                <div class="stat-group">
+                    <div class="stat-label">Completion Status</div>
+                    <div class="badge completed">✓ Completed</div>
+                    ${data.completionDate && data.completionDate !== 'Not set' ? `
+                    <div class="date-display" style="margin-top: 8px;">Completed: ${formatDate(data.completionDate)}</div>
+                    ` : ''}
+                    <div class="stat-detail" style="margin-top: 10px;">
+                        Card age is frozen at completion date
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="stat-group">
+                    <div class="stat-label">Card Details</div>
+                    <div class="stat-detail">
+                        <strong>Card ID:</strong><br>
+                        <code style="font-size: 11px; color: #999;">${data.cardId}</code>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        /**
+         * Render error message
+         */
+        function renderError(message) {
+            return `<div class="error-message">
+                <strong>⚠️ Error:</strong> ${message}
+            </div>`;
+        }
+
+        /**
+         * Initialize modal and render content
+         */
+        function init() {
             try {
-                const card = await t.card('all');
+                const params = getUrlParams();
 
-                // Get tracking data from Trello
-                const trackingData = await t.card('shared', 'columnTracking');
+                // Update header
+                document.getElementById('cardNameDisplay').textContent = params.cardName || 'Unknown Card';
 
-                if (!trackingData || !trackingData.currentColumnEnteredAt) {
-                    document.getElementById('content').innerHTML = `
-                        <div class="no-data">
-                            <p>No time tracking data yet.</p>
-                            <p style="font-size: 12px; margin-top: 8px;">Card tracking will initialize when the power-up loads.</p>
-                        </div>
-                    `;
+                // Validate data
+                if (!params.cardId) {
+                    document.getElementById('contentArea').innerHTML = renderError(
+                        'Missing card data. Please try again.'
+                    );
                     return;
                 }
 
-                // Calculate metrics
-                const cardAge = calculateCardAge(card.dateLastActivity);
-                const daysInColumn = calculateDaysInColumn(trackingData.currentColumnEnteredAt);
+                // Render analytics
+                const html = renderAnalytics(params);
+                document.getElementById('contentArea').innerHTML = html;
 
-                const cardAgeText = formatDays(cardAge);
-                const daysInColumnText = formatDays(daysInColumn);
+                // Log for debugging
+                console.log('Analytics Modal Data:', params);
 
-                // Build HTML
-                let html = `
-                    <div class="summary-box">
-                        <div class="summary-item">
-                            <span class="summary-label">Card Age (Project)</span>
-                            <span class="summary-value">${cardAgeText}</span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Time in Current Column</span>
-                            <span class="summary-value">${daysInColumnText}</span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Current Column</span>
-                            <span class="summary-value">${card.idList || 'Unknown'}</span>
-                        </div>
-                    </div>
-                `;
-
-                // Add current column details
-                const enteredDate = new Date(trackingData.currentColumnEnteredAt);
-                const enteredStr = enteredDate.toLocaleString(undefined, {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                html += `
-                    <div class="time-entry current">
-                        <div class="list-name">
-                            Currently in Column
-                            <span class="status-badge current">Active</span>
-                        </div>
-                        <div class="time-details">
-                            <strong>${daysInColumnText}</strong> • Entered: ${enteredStr}
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 100%"></div>
-                        </div>
-                    </div>
-                `;
-
-                html += `
-                    <div class="refresh-note">
-                        Data refreshes automatically • Last updated: ${new Date().toLocaleTimeString()}
-                    </div>
-                `;
-
-                document.getElementById('content').innerHTML = html;
-
-            } catch (e) {
-                console.error('Error loading time analytics:', e);
-                document.getElementById('content').innerHTML = `
-                    <div class="no-data">
-                        <p>Error loading data. Please refresh.</p>
-                    </div>
-                `;
+            } catch (error) {
+                console.error('Error initializing analytics modal:', error);
+                document.getElementById('contentArea').innerHTML = renderError(
+                    'An error occurred while loading analytics.'
+                );
             }
         }
 
-        // Load on startup and refresh every 10 seconds
-        checkDarkMode();
-        loadTimeAnalytics();
-        setInterval(loadTimeAnalytics, 10000);
-
-        // Listen for storage changes to update in real-time
-        window.addEventListener('storage', loadTimeAnalytics);
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
