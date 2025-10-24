@@ -14,7 +14,7 @@
     "shared"
   ],
   "connector": {
-    "url": "http://localhost:3000/power-up.html"
+    "url": "https://mrkozma.github.io/card-time-tracker/power-up.html"
   },
   "appKey": "card-time-tracker-app",
   "powerUpId": "card-time-tracker",
