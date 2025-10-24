@@ -11,349 +11,339 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-            background-color: #fff;
-            color: #333;
-        }
-
-        body.dark-mode {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-        }
-
-        .time-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background-color: #f0f0f0;
-            color: #333;
-            margin-top: 4px;
-        }
-
-        body.dark-mode .time-badge {
-            background-color: #333;
-            color: #e0e0e0;
-        }
-
-        .time-badge.active-list {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .time-badge.danger {
-            background-color: #f44336;
-            color: white;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal {
-            background-color: white;
-            border-radius: 8px;
-            padding: 24px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        body.dark-mode .modal {
-            background-color: #2d2d2d;
-            color: #e0e0e0;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        body.dark-mode .modal-header {
-            border-bottom-color: #444;
-        }
-
-        .modal-header h2 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: inherit;
-        }
-
-        .time-entry {
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        body.dark-mode .time-entry {
-            border-bottom-color: #444;
-        }
-
-        .time-entry:last-child {
-            border-bottom: none;
-        }
-
-        .list-name {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        body.dark-mode .list-name {
-            color: #e0e0e0;
-        }
-
-        .time-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .time-duration {
-            font-size: 14px;
-            color: #666;
-        }
-
-        body.dark-mode .time-duration {
-            color: #aaa;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background-color: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        body.dark-mode .progress-bar {
-            background-color: #444;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background-color: #2196F3;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-left: 8px;
-        }
-
-        .status-current {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .status-previous {
-            background-color: #9E9E9E;
-            color: white;
-        }
-
-        .no-data {
-            text-align: center;
-            padding: 20px;
-            color: #999;
-        }
-
-        body.dark-mode .no-data {
-            color: #666;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <div id="app"></div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // Initialize Trello Power-Up
-        TrelloPowerUp.initialize({
-            'card-badges': [
-                async function(t, options) {
-                    const card = options.card;
+        // ===== CONFIGURATION =====
+        const CONFIG = {
+            CUSTOM_FIELDS: {
+                CREATION_DATE: 'Creation Date',
+                COMPLETION_DATE: 'Completion Date'
+            },
+            AGE_THRESHOLD: 7 // Days - 7+ days = red badge
+        };
 
-                    try {
-                        // Get or initialize card tracking data
-                        const trackingData = await getOrInitializeCardData(t, card);
+        // ===== UTILITY FUNCTIONS =====
 
-                        if (!trackingData) {
-                            return [];
-                        }
+        /**
+         * Parse ISO date string to Date object
+         * Handles both formats: "YYYY-MM-DD" and "YYYY-MM-DDTHH:mm:ss.sssZ"
+         */
+        function parseISODate(dateStr) {
+            if (!dateStr) return null;
 
-                        // Calculate days in current column
-                        const daysInColumn = calculateDaysInColumn(trackingData.currentColumnEnteredAt);
+            // If it's already a full ISO timestamp, use it directly
+            if (dateStr.includes('T')) {
+                const date = new Date(dateStr);
+                return isNaN(date.getTime()) ? null : date;
+            }
 
-                        // Calculate card age from Trello's dateLastActivity
-                        const cardAge = calculateCardAge(card.dateLastActivity);
+            // If it's just a date string (YYYY-MM-DD), add time
+            const date = new Date(dateStr + 'T00:00:00Z');
+            return isNaN(date.getTime()) ? null : date;
+        }
 
-                        // Format display text
-                        const daysInColumnText = formatDays(daysInColumn);
-                        const cardAgeText = formatDays(cardAge);
+        /**
+         * Get today's date in ISO format
+         */
+        function getTodayISO() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
-                        return [{
-                            text: `⏱️ ${cardAgeText} | ${daysInColumnText}`,
-                            color: daysInColumn > 7 ? 'red' : 'green',
-                            refresh: 60 // Refresh every 60 seconds
-                        }];
-                    } catch (e) {
-                        console.error('Error generating badge:', e);
-                        return [];
-                    }
-                }
-            ],
-            'card-buttons': [
-                async function(t, options) {
-                    return [{
-                        text: 'Time Analytics',
-                        icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838912.png',
-                        callback: function(t) {
-                            return t.modal({
-                                title: 'Time Analytics',
-                                url: './time-modal.html',
-                                height: 600
-                            });
-                        }
-                    }];
-                }
-            ]
-        });
+        /**
+         * Calculate calendar days between two dates (ISO strings)
+         * Uses calendar days (midnight to midnight), not elapsed time
+         * Example: Oct 22 4PM to Oct 24 1AM = 2 days (crosses 2 calendar days)
+         */
+        function calculateCalendarDays(startDateStr, endDateStr) {
+            const start = parseISODate(startDateStr);
+            const end = parseISODate(endDateStr);
 
-        // Get or initialize card tracking data
-        async function getOrInitializeCardData(t, card) {
+            if (!start || !end) return 0;
+
+            // Normalize both dates to midnight UTC for calendar day calculation
+            const startMidnight = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+            const endMidnight = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
+
+            console.log('Calendar day calculation:', {
+                startDate: startMidnight.toISOString(),
+                endDate: endMidnight.toISOString()
+            });
+
+            const oneDay = 24 * 60 * 60 * 1000;
+            const diffTime = Math.abs(endMidnight - startMidnight);
+            const days = Math.floor(diffTime / oneDay);
+
+            console.log('Diff time (ms):', diffTime, 'Days:', days);
+
+            return days;
+        }
+
+        /**
+         * Get badge color based on card age
+         * Green: < 7 days, Red: >= 7 days
+         */
+        function getBadgeColor(cardAge) {
+            return cardAge < CONFIG.AGE_THRESHOLD ? 'green' : 'red';
+        }
+
+        /**
+         * Get all custom fields on the board
+         */
+        async function getBoardCustomFields(t) {
             try {
-                // Try to get existing tracking data
-                let trackingData = await t.card('shared', 'columnTracking');
+                const board = await t.board('customFields');
+                const fields = board?.customFields || [];
+                console.log('Custom fields retrieved:', fields);
+                return Array.isArray(fields) ? fields : [];
+            } catch (error) {
+                console.error('Error getting custom fields:', error);
+                return [];
+            }
+        }
 
-                if (trackingData && trackingData.currentColumnEnteredAt) {
-                    // Data exists, return it
-                    return trackingData;
+        /**
+         * Get custom field value for a card (from within badge callback context)
+         * Note: In badge callback, t.card() is context-aware and doesn't need cardId
+         */
+        async function getCardCustomFieldValue(t, fieldId) {
+            try {
+                if (!fieldId) {
+                    console.log('No fieldId provided');
+                    return null;
                 }
 
-                // First time seeing this card - initialize with current timestamp
-                const newTrackingData = {
-                    cardId: card.id,
-                    currentColumnEnteredAt: new Date().toISOString(),
-                    currentColumnId: card.idList,
-                    currentColumnName: card.name // Will be updated when we get list name
-                };
+                // In badge callback context, t.card() already knows which card we're on
+                const card = await t.card('customFieldItems');
+                console.log('Card customFieldItems:', card);
 
-                // Save it to Trello
-                await t.card('shared', 'columnTracking', newTrackingData);
+                const items = card?.customFieldItems || [];
+                console.log('Custom field items array:', items);
 
-                return newTrackingData;
-            } catch (e) {
-                console.error('Error getting or initializing card data:', e);
+                if (Array.isArray(items) && items.length > 0) {
+                    const item = items.find(item => item.idCustomField === fieldId);
+                    console.log('Found item for fieldId', fieldId, ':', item);
+                    console.log('Item value object:', item?.value);
+                    console.log('Item value keys:', item?.value ? Object.keys(item.value) : 'no value object');
+
+                    // Try different value formats
+                    const value = item?.value?.text || item?.value?.date || null;
+                    console.log('Extracted value:', value);
+                    return value;
+                }
+
+                console.log('No custom field items found');
+                return null;
+            } catch (error) {
+                console.error('Error getting custom field value:', error);
                 return null;
             }
         }
 
-        // Update card tracking when it moves to a new column
-        async function updateCardColumnEntry(t, card) {
+        /**
+         * Get custom field value for a specific card (from analytics modal context)
+         * Note: Outside of badge callback, we need to pass the cardId
+         */
+        async function getCardCustomFieldValueById(t, cardId, fieldId) {
             try {
-                const trackingData = await t.card('shared', 'columnTracking');
-
-                // Only update if card moved to a different column
-                if (trackingData && trackingData.currentColumnId === card.idList) {
-                    return; // Same column, no update needed
+                if (!fieldId) {
+                    return null;
                 }
 
-                // Card moved to a new column
-                const updatedData = {
-                    cardId: card.id,
-                    currentColumnEnteredAt: new Date().toISOString(),
-                    currentColumnId: card.idList,
-                    currentColumnName: card.name
+                const card = await t.card(cardId, 'customFieldItems');
+                const items = card?.customFieldItems || [];
+
+                if (Array.isArray(items) && items.length > 0) {
+                    const item = items.find(item => item.idCustomField === fieldId);
+                    // Try different value formats (text for text fields, date for date fields)
+                    const value = item?.value?.text || item?.value?.date || null;
+                    return value;
+                }
+
+                return null;
+            } catch (error) {
+                console.error('Error getting custom field value by ID:', error);
+                return null;
+            }
+        }
+
+        // ===== CARD BADGES CALLBACK =====
+
+        function cardBadgesCallback(t, opts) {
+            return [{
+                dynamic: async function() {
+                    try {
+                        console.log('=== Badge Callback Started ===');
+
+                        // Get card ID
+                        const cardIdObj = await t.card('id');
+                        const cardId = cardIdObj.id;
+                        console.log('Card ID:', cardId);
+
+                        if (!cardId) {
+                            console.log('No card ID found');
+                            return null;
+                        }
+
+                        // Get custom field IDs
+                        console.log('Fetching custom fields from board...');
+                        const customFields = await getBoardCustomFields(t);
+
+                        const creationDateField = customFields.find(f => f.name === CONFIG.CUSTOM_FIELDS.CREATION_DATE);
+                        const completionDateField = customFields.find(f => f.name === CONFIG.CUSTOM_FIELDS.COMPLETION_DATE);
+
+                        console.log('Creation Date Field:', creationDateField);
+                        console.log('Completion Date Field:', completionDateField);
+
+                        if (!creationDateField) {
+                            console.log('Creation Date custom field not found on board');
+                            return null;
+                        }
+
+                        // Get custom field values
+                        const creationDateStr = await getCardCustomFieldValue(t, creationDateField.id);
+                        const completionDateStr = await getCardCustomFieldValue(t, completionDateField?.id);
+
+                        console.log('Creation Date:', creationDateStr);
+                        console.log('Completion Date:', completionDateStr);
+
+                        if (!creationDateStr) {
+                            console.log('Card has no creation date set');
+                            return null;
+                        }
+
+                        // Calculate card age
+                        // If completion date exists, use it; otherwise use today
+                        const ageEndDate = completionDateStr || getTodayISO();
+                        const cardAge = calculateCalendarDays(creationDateStr, ageEndDate);
+
+                        console.log('Card age calculation:', {
+                            creationDateStr,
+                            ageEndDate,
+                            cardAge
+                        });
+
+                        // Determine badge color based on completion status and card age
+                        // If completed, use blue; otherwise use age-based color (green/red)
+                        let badgeColor;
+                        if (completionDateStr) {
+                            // Card is completed - use blue background
+                            badgeColor = 'blue';
+                        } else {
+                            // Card is active - use age-based color
+                            badgeColor = getBadgeColor(cardAge);
+                        }
+
+                        // Format badge text - just show card age
+                        const badgeText = `⏱️ ${cardAge}d`;
+
+                        console.log('Badge ready:', badgeText, 'color:', badgeColor, 'isCompleted:', !!completionDateStr);
+
+                        return {
+                            text: badgeText,
+                            color: badgeColor
+                        };
+
+                    } catch (error) {
+                        console.error('Error in dynamic badge:', error);
+                        return null;
+                    }
+                },
+                // Minimum refresh is 10 seconds (Trello requirement)
+                refresh: 10
+            }];
+        }
+
+        // ===== CARD BUTTONS CALLBACK =====
+
+        function cardButtonsCallback(t, options) {
+            const card = options.context.card;
+
+            if (!card || !card.id) {
+                return [];
+            }
+
+            return [{
+                text: 'Time Analytics',
+                icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838912.png',
+                callback: function(t) {
+                    openAnalyticsModal(t, card.id);
+                }
+            }];
+        }
+
+        // ===== ANALYTICS MODAL =====
+
+        async function openAnalyticsModal(t, cardId) {
+            try {
+                // Get card name
+                const cardData = await t.card(cardId, 'name');
+                const cardName = cardData?.name || 'Unknown Card';
+
+                // Get custom field IDs
+                const customFields = await getBoardCustomFields(t);
+                const creationDateField = customFields.find(f => f.name === CONFIG.CUSTOM_FIELDS.CREATION_DATE);
+                const completionDateField = customFields.find(f => f.name === CONFIG.CUSTOM_FIELDS.COMPLETION_DATE);
+
+                if (!creationDateField) {
+                    alert('Creation Date custom field not set up. Please create it in board settings.');
+                    return;
+                }
+
+                // Get custom field values
+                const creationDateStr = await getCardCustomFieldValueById(t, cardId, creationDateField.id);
+                const completionDateStr = await getCardCustomFieldValueById(t, cardId, completionDateField?.id);
+
+                if (!creationDateStr) {
+                    alert('Card has no creation date set. Please set the Creation Date custom field.');
+                    return;
+                }
+
+                // Calculate card age
+                const ageEndDate = completionDateStr || getTodayISO();
+                const cardAge = calculateCalendarDays(creationDateStr, ageEndDate);
+
+                // Prepare modal data
+                const modalData = {
+                    cardId: cardId,
+                    cardName: cardName,
+                    cardAge: cardAge,
+                    creationDate: creationDateStr,
+                    completionDate: completionDateStr || 'Not set',
+                    isCompleted: !!completionDateStr
                 };
 
-                await t.card('shared', 'columnTracking', updatedData);
-            } catch (e) {
-                console.error('Error updating card column entry:', e);
+                // Open modal with data
+                const params = new URLSearchParams(modalData).toString();
+                const modalUrl = `https://mrkozma.github.io/card-time-tracker/time-modal.html?${params}`;
+
+                t.showPopup({
+                    title: 'Time Analytics - ' + cardName,
+                    url: modalUrl,
+                    height: 500
+                });
+
+            } catch (error) {
+                console.error('Error opening analytics modal:', error);
+                alert('Error: Could not open analytics modal. Check console for details.');
             }
         }
 
-        // Calculate days in current column
-        function calculateDaysInColumn(enteredAtISO) {
-            const enteredAt = new Date(enteredAtISO);
-            const now = new Date();
-            const milliseconds = now - enteredAt;
-            return milliseconds / (1000 * 60 * 60 * 24); // Convert to days
-        }
+        // ===== INITIALIZE POWER-UP =====
+        TrelloPowerUp.initialize({
+            'card-badges': cardBadgesCallback,
+            'card-buttons': cardButtonsCallback
+        });
 
-        // Calculate card age from Trello's dateLastActivity
-        function calculateCardAge(dateLastActivity) {
-            if (!dateLastActivity) {
-                return 0;
-            }
-            const createdAt = new Date(dateLastActivity);
-            const now = new Date();
-            const milliseconds = now - createdAt;
-            return milliseconds / (1000 * 60 * 60 * 24); // Convert to days
-        }
-
-        // Format days to readable format (e.g., "3d 5h" or "2h 30m")
-        function formatDays(days) {
-            if (days < 0) return '0d';
-
-            const totalHours = days * 24;
-            const totalMinutes = totalHours * 60;
-
-            if (days >= 1) {
-                const wholeD = Math.floor(days);
-                const remainingHours = Math.floor((days - wholeD) * 24);
-                return remainingHours > 0 ? `${wholeD}d ${remainingHours}h` : `${wholeD}d`;
-            }
-
-            if (totalHours >= 1) {
-                const wholeH = Math.floor(totalHours);
-                const remainingMinutes = Math.floor((totalHours - wholeH) * 60);
-                return remainingMinutes > 0 ? `${wholeH}h ${remainingMinutes}m` : `${wholeH}h`;
-            }
-
-            return `${Math.floor(totalMinutes)}m`;
-        }
-
-        // Expose functions globally for modal access
-        window.listTimeTracker = {
-            getOrInitializeCardData,
-            updateCardColumnEntry,
-            calculateDaysInColumn,
-            calculateCardAge,
-            formatDays
-        };
     </script>
 </body>
 </html>
