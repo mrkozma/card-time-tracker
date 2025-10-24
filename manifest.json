@@ -2,7 +2,7 @@
   "name": "Card Time Tracker",
   "description": "Automatically track how long each card has spent in its current list",
   "icon": {
-    "url": "https://cdn-icons-png.flaticon.com/512/2838/2838912.png"
+    "url": "https://mrkozma.github.io/card-time-tracker/icon.svg"
   },
   "author": {
     "name": "Attila's Team"
